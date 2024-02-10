@@ -24,7 +24,7 @@ Feel free to open issues for bugs and suggestions.
  * Conveniently set/clear `pos1` and `pos2` coordinates from the UI for finetuning.
  * All available commands are shown and parameter entry is free form. It's what power users call powerful.
     * Especially useful is the `//lua` command where you can now just paste lua code in a text area and run it.
-    * Help
+    * Help text and description shown in same window because it's hard remember all that
  * Commands parameters are remembered for that session and are kept separate per command. So you can relaunch the same command with the same parameters multiple times.
  * `<node[1-4]>` placeholder substitution in the command.
 

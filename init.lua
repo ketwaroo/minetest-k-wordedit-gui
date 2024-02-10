@@ -250,12 +250,18 @@ cmdGui.buildCmdLaunchForm = function(player, ctx)
     local guiDef = {
         spacing = boxSpacing,
         padding = 0.2,
+        gui.Style {
+            selectors = { "*" },
+            props = {
+                font_size = "12",
+            }
+        },
         gui.HBox({
             spacing = boxSpacing,
             padding = boxPadding,
             gui.Hypertext({
                 w = 6,
-                h = 0.75,
+                h = 1,
                 text = "<bigger><b>" .. cmd .. "</b></bigger>",
                 name = "header",
             })
@@ -268,7 +274,7 @@ cmdGui.buildCmdLaunchForm = function(player, ctx)
             gui.Style {
                 selectors = { "params" },
                 props = {
-                    font_size = "*1.125",
+                    font_size = "+2",
                     font      = "mono",
                 }
             },
@@ -388,8 +394,14 @@ cmdGui.buildCmdListForm = function(player, ctx)
     local guiDef = {
         spacing = boxSpacing,
         padding = 0.2,
+        gui.Style {
+            selectors = { "*" },
+            props = {
+                font_size = "12",
+            }
+        },
         gui.Hbox {
-            gui.Hypertext { w = cols, h = 0.75, text = "<bigger><b>k WorldEdit Command Launcher</b></bigger>" },
+            gui.Hypertext { w = cols, h = 1, text = "<bigger><b>k WorldEdit Command Launcher</b></bigger>" },
         }
     }
     local btnRow = {
