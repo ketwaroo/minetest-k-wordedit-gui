@@ -241,16 +241,21 @@ cmdGui.buildCmdLaunchForm = function(player, ctx)
     --print("build" .. dump(ctx))
     local cmdDef = worldedit.registered_commands[cmd]
     local playerName = player:get_player_name()
+
+    local hasParams = ("string" == type(cmdDef.params) and 0 ~= string.len(cmdDef.params))
+
     -- minetest 5.7+
     -- local windowInfo = minetest.get_player_window_information(playerName)
-    local maxWidth = 10               --windowInfo.max_formspec_size.x - 2
-    local maxTextWidth = maxWidth * 8 -- just a guess
+    local maxWidth = hasParams and 16 or 8 --windowInfo.max_formspec_size.x - 2
+    local maxTextWidth = maxWidth * 16     -- just a guess
 
-    local labelCol = 1.5
+    local guiNil = gui.Nil {}
+    local labelCol = 1.4
     local guiDef = {
         spacing = boxSpacing,
         padding = 0.2,
-        gui.Style {
+        w = maxWidth,
+        gui.StyleType {
             selectors = { "*" },
             props = {
                 font_size = "12",
@@ -270,7 +275,9 @@ cmdGui.buildCmdLaunchForm = function(player, ctx)
         gui.HBox({
             spacing = boxSpacing,
             padding = boxPadding,
-            gui.Label({ label = S("Command\nParameters:"), align_v = "top", w = labelCol, }),
+
+            hasParams and gui.Label({ label = S("Command\nParameters:"), align_v = "top", w = labelCol, }) or guiNil,
+
             gui.Style {
                 selectors = { "params" },
                 props = {
@@ -278,7 +285,7 @@ cmdGui.buildCmdLaunchForm = function(player, ctx)
                     font      = "mono",
                 }
             },
-            gui.Textarea({ name = "params", w = 6, h = 5, align_v = "top" }),
+            hasParams and gui.Textarea({ name = "params", w = 6, h = 5, align_v = "top" }) or guiNil,
 
             gui.VBox({
                 spacing = boxSpacing,
@@ -287,42 +294,48 @@ cmdGui.buildCmdLaunchForm = function(player, ctx)
                 cmdGui.buildPosDefForm(1, player, ctx),
                 cmdGui.buildPosDefForm(2, player, ctx),
 
-                gui.Label { label = S("Placeholders:"), w = 1.5, h = 0.5, },
-                gui.HBox({
-                    gui.Label { label = S("<node1>:"), w = 1.25, h = 0.5, },
-                    gui.Dropdown { name = "node1", items = k_worldedit_gui.nodeList, index_event = true, w = 6, h = 0.5 },
-                }),
-                gui.HBox({
-                    gui.Label { label = S("<node2>:"), w = 1.25, h = 0.5, },
-                    gui.Dropdown { name = "node2", items = k_worldedit_gui.nodeList, index_event = true, w = 6, h = 0.5 },
-                }),
-                gui.HBox({
-                    gui.Label { label = S("<node3>:"), w = 1.25, h = 0.5, },
-                    gui.Dropdown { name = "node3", items = k_worldedit_gui.nodeList, index_event = true, w = 6, h = 0.5 },
-                }),
-                gui.HBox({
-                    gui.Label { label = S("<node4>:"), w = 1.25, h = 0.5, },
-                    gui.Dropdown { name = "node4", items = k_worldedit_gui.nodeList, index_event = true, w = 6, h = 0.5 },
-                }),
+                hasParams and gui.Label { label = S("Placeholders:"), w = 1.5, h = 0.5, } or guiNil,
+                hasParams and gui.HBox({
+                    gui.Label { label = S("<node1>:"), w = 1, h = 0.5, },
+                    gui.Dropdown { name = "node1", items = k_worldedit_gui.nodeList, index_event = true, w = 7, h = 0.5 },
+                }) or guiNil,
+                hasParams and gui.HBox({
+                    gui.Label { label = S("<node2>:"), w = 1, h = 0.5, },
+                    gui.Dropdown { name = "node2", items = k_worldedit_gui.nodeList, index_event = true, w = 7, h = 0.5 },
+                }) or guiNil,
+                hasParams and gui.HBox({
+                    gui.Label { label = S("<node3>:"), w = 1, h = 0.5, },
+                    gui.Dropdown { name = "node3", items = k_worldedit_gui.nodeList, index_event = true, w = 7, h = 0.5 },
+                }) or guiNil,
+                hasParams and gui.HBox({
+                    gui.Label { label = S("<node4>:"), w = 1., h = 0.5, },
+                    gui.Dropdown { name = "node4", items = k_worldedit_gui.nodeList, index_event = true, w = 7, h = 0.5 },
+                }) or guiNil,
 
             }),
-        }),
-
-        gui.HBox({
-            spacing = boxSpacing,
-            padding = boxPadding,
-            gui.Label({ label = S("Description: "), align_v = "top", w = labelCol, }),
-            gui.Label({ label = minetest.wrap_text(cmdDef.description, maxTextWidth), align_v = "top", w = maxWidth - labelCol }),
         }),
 
         ("string" == type(cmdDef.params) and 0 ~= string.len(cmdDef.params))
         and gui.HBox({
             spacing = boxSpacing,
             padding = boxPadding,
-            gui.Label({ label = S("Param Format: "), align_v = "top", w = labelCol, }),
-            gui.Label({ label = minetest.wrap_text(cmdDef.params, maxTextWidth), align_v = "top", w = maxWidth - labelCol }),
+            gui.Label({ label = S("Params hint: "), align_v = "top", w = labelCol, }),
+            gui.Label({ label = cmdDef.params, align_v = "top", }),
         })
         or gui.Nil({}),
+
+        gui.HBox({
+            spacing = boxSpacing,
+            padding = boxPadding,
+            gui.Label({ label = S("Description: "), align_v = "top", w = labelCol, }),
+            gui.Hypertext({
+                name = "cmd_description",
+                text = "<style size=12>" .. cmdDef.description .. "</style>",
+                h = 0.75 * math.ceil(string.len(cmdDef.description) / maxTextWidth),
+                w = maxWidth - labelCol,
+                align_v = "top",
+            }),
+        }),
 
     }
 
@@ -330,22 +343,19 @@ cmdGui.buildCmdLaunchForm = function(player, ctx)
         spacing = boxSpacing,
         padding = boxPadding,
 
+        gui.Spacer {},
+
+        ctx.needConfirm and gui.Checkbox({ label = S("Confirm Unsafe"), name = "confirmed" }) or gui.Nil({}),
         gui.Button({
-            label = S("OK"),
+            label = S("RUN"),
             name = "ok",
             on_event = function(player, ctx)
                 ctx.cmd = cmd
                 return cmdGui.event.ok(player, ctx)
             end,
-            align_h = "right",
-            expand = true,
         }),
-
-        ctx.needConfirm and gui.Checkbox({ label = S("Confirm Unsafe"), name = "confirmed" }) or gui.Nil({}),
-
-        --gui.Button({ label = S("Clear Region"), on_event = k_worldedit_gui.clearRegionSelection, name = "clear", align_h = "right", }),
-        gui.ButtonExit({ label = S("Back"), on_event = cmdGui.event.back, name = "back", align_h = "right", }),
-        gui.ButtonExit({ label = S("Close"), name = "cancel", align_h = "right" }),
+        gui.ButtonExit({ label = S("Back"), on_event = cmdGui.event.back, name = "back", }),
+        gui.ButtonExit({ label = S("Close"), name = "cancel", }),
 
     }))
 
@@ -353,8 +363,8 @@ cmdGui.buildCmdLaunchForm = function(player, ctx)
         table.insert(guiDef, gui.HBox({
             spacing = boxSpacing,
             padding = boxPadding,
-            gui.Label({ label = S("Messages: "), w = labelCol, }),
-            gui.Label({ label = minetest.wrap_text(ctx.message, maxTextWidth), w = maxWidth - labelCol }),
+            gui.Label({ label = S("Messages: "), w = labelCol, align_v = "top" }),
+            gui.Hypertext({ name = "message_text", text = ctx.message, h = math.ceil(string.len(ctx.message) / maxTextWidth), w = maxWidth - labelCol }),
 
         }))
         ctx.message = nil
@@ -394,14 +404,14 @@ cmdGui.buildCmdListForm = function(player, ctx)
     local guiDef = {
         spacing = boxSpacing,
         padding = 0.2,
-        gui.Style {
+        gui.StyleType {
             selectors = { "*" },
             props = {
                 font_size = "12",
             }
         },
         gui.Hbox {
-            gui.Hypertext { w = cols, h = 1, text = "<bigger><b>k WorldEdit Command Launcher</b></bigger>" },
+            gui.Hypertext { w = cols, h = 1, text = "<bigger><b>K WorldEdit Command Launcher</b></bigger>" },
         }
     }
     local btnRow = {
@@ -443,8 +453,8 @@ cmdGui.buildCmdListForm = function(player, ctx)
 
         cmdGui.buildPosDefForm(1, player, ctx),
         cmdGui.buildPosDefForm(2, player, ctx),
-
-        gui.Button({ label = S("Clear Region"), on_event = k_worldedit_gui.clearRegionSelection, expand = true, name = "clear", align_h = "right", }),
+        gui.Spacer {},
+        gui.Button({ label = S("Clear Region"), on_event = k_worldedit_gui.clearRegionSelection, name = "clear", align_h = "right", }),
         gui.ButtonExit({ label = "Close", align_h = "right", align_v = "bottom", })
     }))
 
