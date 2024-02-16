@@ -15,18 +15,21 @@ local cmdGui = {
     event = {}
 }
 
+--@return vector
 k_worldedit_gui.avgPos = function(x, y, z)
     if "table" == type(x) then
         x, y, z = x.x, x.y, x.z
     end
     x, y, z = math.floor(x + 0.5), math.floor(y + 0.5), math.floor(z + 0.5)
-    return {
-        x = x,
-        y = y,
-        z = z,
-    }
+    return vector.new(x, y, z)
 end
 
+--[[
+Handle on_use events.
+
+@param player
+@pt pointed thing
+]]
 k_worldedit_gui.doWandStuff = function(player, pt)
     if
         nil == pt
@@ -38,7 +41,11 @@ k_worldedit_gui.doWandStuff = function(player, pt)
     local playerName = player:get_player_name()
     local newPos = nil
     if "node" == pt.type then
-        newPos = k_worldedit_gui.avgPos(pt.under)
+        if player:get_player_control().aux1 then
+            newPos = k_worldedit_gui.avgPos(pt.above)
+        else
+            newPos = k_worldedit_gui.avgPos(pt.under)
+        end
     elseif
         "object" == pt.type
         and nil ~= pt.ref:get_luaentity()
@@ -175,14 +182,14 @@ cmdGui.event.setPos = function(pos, player, ctx)
     local p = "pos" .. ps[2]
     local playerpos = k_worldedit_gui.avgPos(player:get_pos())
     if "player" == thing then
-        worldedit[p][playerName] = playerpos
+        worldedit[p][playerName] = vector.new(playerpos.x, playerpos.y, playerpos.z)
     elseif "set" == thing then
-        worldedit[p][playerName] = {
-            --@todo defaults to playpos or zero?
-            x = tonumber(ctx.form[p .. "_x"]) or playerpos.x,
-            y = tonumber(ctx.form[p .. "_y"]) or playerpos.y,
-            z = tonumber(ctx.form[p .. "_z"]) or playerpos.z,
-        }
+        worldedit[p][playerName] = vector.new(
+        --@todo defaults to playpos or zero?
+            tonumber(ctx.form[p .. "_x"]) or playerpos.x,
+            tonumber(ctx.form[p .. "_y"]) or playerpos.y,
+            tonumber(ctx.form[p .. "_z"]) or playerpos.z
+        )
     elseif "clear" == thing then
         worldedit[p][playerName] = nil
     end

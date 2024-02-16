@@ -15,7 +15,7 @@ Feel free to open issues for bugs and suggestions.
 
  * Either use in creative mode or `/giveme k_worldedit_gui:command_tablet` to acquire the Tablet of Worldly Commands ![Tablet of Worldly Commands](textures/k_worldedit_gui_tablet.png).
  * Sort of has a far wand built in on `use` (click).
-    * Behaves a bit like additive wand.
+    * Behaves a bit like additive wand. `aux1` + `use` to place maker "above" pointed node instead of "under".
     * Otherwise, markers still works with other worldedit wands as long as they use the same 2 marker system.
  * Available commands depend on player privileges. You will at least require `server` or `worldedit` privilege for most of them.
  * `place` (right-click) to show UI to build commands.
